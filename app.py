@@ -1,0 +1,72 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from backend import run_portfolio
+
+st.set_page_config(page_title="Portfolio Tracker", layout="wide")
+
+st.title("📊 Mutual Fund Portfolio Tracker")
+
+uploaded_file = st.file_uploader("Upload your portfolio Excel file", type=["xlsx"])
+
+if uploaded_file:
+    with open("temp.xlsx", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    if st.button("Run Portfolio Update"):
+        with st.spinner("Processing..."):
+            df = run_portfolio("temp.xlsx")
+
+        st.success("Portfolio Updated Successfully!")
+
+        # -----------------------------
+        # REMOVE TOTAL ROW FOR CHARTS
+        # -----------------------------
+        chart_df = df[df["Scheme Name"] != "TOTAL"]
+
+        # -----------------------------
+        # SHOW TABLE
+        # -----------------------------
+        st.subheader("📋 Portfolio Summary")
+        st.dataframe(df, use_container_width=True)
+
+        # -----------------------------
+        # PIE CHART - ALLOCATION
+        # -----------------------------
+        st.subheader("🥧 Portfolio Allocation")
+
+        fig1, ax1 = plt.subplots()
+        ax1.pie(
+            chart_df["Current Value (₹)"],
+            labels=chart_df["Scheme Name"],
+            autopct="%1.1f%%"
+        )
+        ax1.set_title("Allocation by Scheme")
+
+        st.pyplot(fig1)
+
+        # -----------------------------
+        # BAR CHART - XIRR
+        # -----------------------------
+        st.subheader("📊 Scheme-wise XIRR (%)")
+
+        fig2, ax2 = plt.subplots()
+        ax2.bar(
+            chart_df["Scheme Name"],
+            chart_df["XIRR (%)"]
+        )
+        ax2.set_ylabel("XIRR (%)")
+        ax2.set_title("Returns by Scheme")
+
+        plt.xticks(rotation=45, ha="right")
+
+        st.pyplot(fig2)
+
+        # -----------------------------
+        # DOWNLOAD BUTTON
+        # -----------------------------
+        st.download_button(
+            label="📥 Download Updated File",
+            data=open("temp.xlsx", "rb"),
+            file_name="portfolio_updated.xlsx"
+        )
