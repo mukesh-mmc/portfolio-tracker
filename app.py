@@ -1,11 +1,17 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from backend import run_portfolio
+import backend
 
 st.set_page_config(page_title="Portfolio Tracker", layout="wide")
 
 st.title("📊 Mutual Fund Portfolio Tracker")
+
+# ✅ NEW: Refresh NAV button
+if st.button("🔄 Refresh NAV"):
+    backend._nav_history_cache.clear()
+    backend._nav_latest_cache.clear()
+    st.success("NAV cache cleared. Please click 'Run Portfolio Update'")
 
 uploaded_file = st.file_uploader("Upload your portfolio Excel file", type=["xlsx"])
 
@@ -15,7 +21,7 @@ if uploaded_file:
 
     if st.button("Run Portfolio Update"):
         with st.spinner("Processing..."):
-            df = run_portfolio("temp.xlsx")
+            df = backend.run_portfolio("temp.xlsx")
 
         st.success("Portfolio Updated Successfully!")
 
