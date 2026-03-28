@@ -31,6 +31,22 @@ if uploaded_file:
         chart_df = df[df["Scheme Name"] != "TOTAL"]
 
         # -----------------------------
+        # DISPLAY METRICS
+        # -----------------------------
+        if "TOTAL" in df["Scheme Name"].values:
+            total_row = df[df["Scheme Name"] == "TOTAL"].iloc[0]
+
+            st.header("📈 Key Portfolio Metrics")
+
+            st.metric("Total Portfolio Value", f"₹{total_row['Current Value (₹)']:.2f}")
+            st.metric("Daily Change", f"₹{total_row['Daily Change (₹)']:.2f}", 
+                      delta=f"{total_row['Daily Change (%)']:.2f}%%",
+                      delta_color=("inverse" if total_row['Daily Change (₹)'] > 0 else "normal"))
+            st.metric("Total Returns", f"₹{total_row['Total Return (₹)']:.2f}")
+            if total_row["XIRR (%)"] is not None:
+                st.metric("Portfolio XIRR", f"{total_row['XIRR (%)']:.2f}%")
+
+        # -----------------------------
         # SHOW TABLE
         # -----------------------------
         st.subheader("📋 Portfolio Summary")
